@@ -1,0 +1,32 @@
+name: Auto Update JSON Data
+
+on:
+  schedule:
+    # 每天北京时间早上 8:00 运行 (UTC 0:00)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允许你手动点击按钮测试
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python # 以 Python 脚本为例
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Run update script
+        run: |
+          python your_script.py  # 运行你的脚本，确保它会修改目录下的 data.json
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          # 如果文件没变，就不提交，防止报错
+          git commit -m "自动更新 JSON 数据: $(date)" || exit 0
+          git push
