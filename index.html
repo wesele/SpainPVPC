@@ -30,61 +30,8 @@
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 15px;
             font-size: 24px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 12px;
-        }
-
-        .status {
-            text-align: center;
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 11px;
-            min-height: 18px;
-        }
-
-        .status.loading {
-            color: #3498db;
-        }
-
-        .status.success {
-            color: #27ae60;
-        }
-
-        .status.warning {
-            color: #f39c12;
-        }
-
-        .status.error {
-            color: #e74c3c;
-        }
-
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            font-size: 12px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .legend-box {
-            width: 24px;
-            height: 24px;
-            border-radius: 3px;
-            border: 1px solid #ddd;
         }
 
         .table-wrapper {
@@ -97,6 +44,7 @@
             width: 100%;
             border-collapse: collapse;
             background: white;
+            table-layout: fixed;
         }
 
         th, td {
@@ -125,7 +73,6 @@
             font-weight: 600;
             color: #333;
             background: #f5f5f5;
-            min-width: 70px;
         }
 
         .date-label {
@@ -146,48 +93,30 @@
             padding: 8px 4px;
             font-weight: 500;
             color: #333;
-            cursor: help;
             transition: all 0.15s ease;
             position: relative;
-            min-width: 50px;
         }
 
-        .price-cell:hover {
-            transform: scale(1.08);
-            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
-            z-index: 10;
+        .price-cell.current-hour {
+            border: 3px solid #ff6b6b;
+            box-shadow: 0 0 12px rgba(255, 107, 107, 0.6);
+            animation: pulse 2s ease-in-out infinite;
+            z-index: 5;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 12px rgba(255, 107, 107, 0.6);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(255, 107, 107, 0.9);
+            }
         }
 
         .price-value {
             display: block;
             font-size: 11px;
             font-weight: 600;
-        }
-
-        .info-text {
-            text-align: center;
-            color: #888;
-            font-size: 11px;
-            margin-top: 12px;
-            padding: 10px;
-            background: #f9f9f9;
-            border-radius: 6px;
-        }
-
-        .loader {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #3498db;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 5px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         /* 响应式设计 */
@@ -205,12 +134,6 @@
                 font-size: 20px;
                 margin-bottom: 3px;
             }
-
-            .legend {
-                gap: 12px;
-                margin-bottom: 12px;
-                font-size: 11px;
-            }
         }
 
         @media (max-width: 768px) {
@@ -222,19 +145,9 @@
                 padding: 12px;
             }
 
-            .legend {
-                gap: 10px;
-                font-size: 10px;
-            }
-
             th, td {
                 padding: 4px 2px;
                 font-size: 9px;
-            }
-
-            .legend-box {
-                width: 20px;
-                height: 20px;
             }
 
             h1 {
@@ -246,35 +159,6 @@
 <body>
     <div class="container">
         <h1>⚡ 西班牙电价查看</h1>
-        <p class="subtitle">Spain PVPC - Precio Promedio Ponderado de la Electricidad</p>
-        <div class="status" id="status"></div>
-
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-box" style="background: #27ae60;"></div>
-                <span>&lt;0.05</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-box" style="background: #2ecc71;"></div>
-                <span>0.05-0.10</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-box" style="background: #f1c40f;"></div>
-                <span>0.10-0.15</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-box" style="background: #f39c12;"></div>
-                <span>0.15-0.20</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-box" style="background: #e74c3c;"></div>
-                <span>0.20-0.25</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-box" style="background: #c0392b;"></div>
-                <span>&gt;0.25</span>
-            </div>
-        </div>
 
         <div class="table-wrapper">
             <table id="priceTable">
@@ -284,64 +168,60 @@
                 <tbody id="priceBody"></tbody>
             </table>
         </div>
-
-        <div class="info-text">
-            💡 过去10天每小时电价 (€/MWh) | 鼠标悬停查看具体数值
-        </div>
     </div>
 
     <script>
         /**
-         * 设置状态信息
-         */
-        function setStatus(message, type = 'info') {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = message;
-            statusEl.className = 'status ' + type;
-        }
-
-        /**
          * 根据电价生成渐变色背景
+         * price单位: €/MWh (即 1000 * €/kWh)
+         * 0.03元/kWh (30) -> 极深绿
+         * 0.15元/kWh (150) -> 橙红
+         * 0.50元/kWh (500) -> 极深红
          */
         function getPriceColor(price) {
-            let r, g, b;
-
-            if (price < 0.05) {
-                r = 39;
-                g = 174;
-                b = 96;
-            } else if (price < 0.10) {
-                const ratio = (price - 0.05) / 0.05;
-                r = Math.round(39 + (241 - 39) * ratio);
-                g = Math.round(174 + (196 - 174) * ratio);
-                b = Math.round(96 + (30 - 96) * ratio);
-            } else if (price < 0.15) {
-                r = 241;
-                g = 196;
-                b = 30;
-            } else if (price < 0.20) {
-                const ratio = (price - 0.15) / 0.05;
-                r = Math.round(241 - (100 - 241) * ratio);
-                g = Math.round(196 - (76 - 196) * ratio);
-                b = Math.round(30 - (44 - 30) * ratio);
-            } else if (price < 0.25) {
-                r = 231;
-                g = 76;
-                b = 60;
+            const s = 100; // 饱和度最大，视觉冲击力强
+            let h, l;
+            
+            if (price <= 30) {
+                // 极低价：极深绿
+                h = 150;
+                l = 18;
+            } else if (price < 100) {
+                // 30 - 100: 深绿到亮绿
+                let r = (price - 30) / 70;
+                h = 150 - r * 30; // 150 -> 120
+                l = 18 + r * 22;  // 18 -> 40
+            } else if (price < 150) {
+                // 100 - 150: 绿到橙 (0.15是个关键节点，让它更红一点)
+                let r = (price - 100) / 50;
+                h = 120 - r * 90; // 120 -> 30 (橙红)
+                l = 40 + r * 10;  // 40 -> 50
+            } else if (price < 350) {
+                // 150 - 350: 橙红到红
+                let r = (price - 150) / 200;
+                h = 30 - r * 30;  // 30 -> 0 (红)
+                l = 50 - r * 20;  // 50 -> 30
             } else {
-                r = 192;
-                g = 57;
-                b = 43;
+                // 350+: 极深红
+                let r = Math.min(1, (price - 350) / 250);
+                h = 0;
+                l = 30 - r * 15;  // 30 -> 15
             }
-
-            return `rgb(${r}, ${g}, ${b})`;
+            
+            return `hsl(${h}, ${s}%, ${l}%)`;
         }
 
         /**
          * 计算对比文字颜色
          */
         function getTextColor(price) {
-            return price < 0.15 ? '#333' : 'white';
+            // 根据上面的亮度逻辑：
+            // 极低价(l=18)和极高价(l<30)需要白色
+            // 中间部分(l接近50)需要黑色
+            if (price < 70 || price > 220) {
+                return 'white';
+            }
+            return '#111';
         }
 
         /**
@@ -363,7 +243,7 @@
          * 检查是否有足够的完整数据（过去10天）
          */
         function isDataComplete(data) {
-            const today = new Date(2026, 3, 25);
+            const today = new Date();
             for (let dayOffset = 0; dayOffset < 10; dayOffset++) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - (9 - dayOffset));
@@ -418,21 +298,16 @@
          * 获取完整的过去10天数据
          */
         async function getPriceData() {
-            setStatus('<span class="loader"></span> 正在加载数据...', 'loading');
-
             // 先尝试从本地加载
             let data = await loadLocalData();
             
             if (data && isDataComplete(data)) {
-                setStatus('✓ 使用本地数据', 'success');
                 return data;
             }
 
             // 本地数据不完整，从 API 获取
-            setStatus('<span class="loader"></span> 从网络获取数据...', 'loading');
-            
             data = data || {};
-            const today = new Date(2026, 3, 25);
+            const today = new Date();
             let updated = false;
 
             for (let dayOffset = 0; dayOffset < 10; dayOffset++) {
@@ -462,29 +337,45 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
-                    setStatus('✓ 已获取最新数据并保存', 'success');
                 } catch (error) {
-                    setStatus('✓ 已获取最新数据 (本地保存)', 'warning');
                     console.log('后端保存失败，但本地已保存:', error);
                 }
-            } else {
-                setStatus('✓ 数据已就绪', 'success');
             }
 
             return data;
         }
 
         /**
+         * 计算可以显示的天数
+         */
+        function calculateVisibleDays() {
+            const containerWidth = document.querySelector('.container').offsetWidth;
+            const hourColumnWidth = 50; // 时间列宽度
+            const dateColumnMinWidth = 55; // 日期列最小宽度
+            const padding = 40; // 容器内边距
+            
+            const availableWidth = containerWidth - hourColumnWidth - padding;
+            const maxDays = Math.floor(availableWidth / dateColumnMinWidth);
+            
+            // 限制在1-10天之间
+            return Math.max(1, Math.min(10, maxDays));
+        }
+
+        /**
          * 渲染价格表格
          */
         function renderPriceTable(priceData) {
-            const today = new Date(2026, 3, 25);
+            const today = new Date();
+            const currentHour = today.getHours();
+            
+            // 计算可以显示的天数
+            const visibleDays = calculateVisibleDays();
 
-            // 获取过去10天的日期数组
+            // 获取过去N天的日期数组
             const dates = [];
-            for (let dayOffset = 0; dayOffset < 10; dayOffset++) {
+            for (let dayOffset = 0; dayOffset < visibleDays; dayOffset++) {
                 const date = new Date(today);
-                date.setDate(date.getDate() - (9 - dayOffset));
+                date.setDate(date.getDate() - (visibleDays - 1 - dayOffset));
                 const dateStr = formatDate(date);
                 dates.push({
                     dateStr: dateStr,
@@ -528,9 +419,17 @@
                 dates.forEach(dateInfo => {
                     const td = document.createElement('td');
                     const prices = priceData[dateInfo.dateStr];
-                    const price = prices && prices[hour] ? prices[hour] / 1000 : null;
+                    const price = prices && prices[hour] ? prices[hour] : null;
 
                     td.className = 'price-cell';
+                    
+                    // 判断是否是当前时段
+                    const isToday = dateInfo.dateStr === formatDate(today);
+                    const isCurrentHour = isToday && hour === currentHour;
+                    
+                    if (isCurrentHour) {
+                        td.classList.add('current-hour');
+                    }
                     
                     if (price !== null) {
                         const bgColor = getPriceColor(price);
@@ -538,8 +437,7 @@
 
                         td.style.backgroundColor = bgColor;
                         td.style.color = textColor;
-                        td.title = `${dateInfo.month}/${dateInfo.day} ${String(hour).padStart(2, '0')}:00 - €${price.toFixed(4)}/kWh`;
-                        td.innerHTML = `<span class="price-value">€${price.toFixed(2)}</span>`;
+                        td.innerHTML = `<span class="price-value">€${(price / 1000).toFixed(3)}</span>`;
                     } else {
                         td.textContent = '-';
                         td.style.backgroundColor = '#f0f0f0';
@@ -559,8 +457,16 @@
             try {
                 const priceData = await getPriceData();
                 renderPriceTable(priceData);
+                
+                // 窗口大小改变时重新渲染
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        renderPriceTable(priceData);
+                    }, 200);
+                });
             } catch (error) {
-                setStatus('❌ 加载数据失败，请刷新页面重试', 'error');
                 console.error('初始化失败:', error);
             }
         }
