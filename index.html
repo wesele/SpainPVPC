@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西班牙电价展示 - Spain PVPC</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            border: 1px solid #e0e0e0;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .hour-header {
+            background: #f9f9f9;
+            font-weight: 600;
+            color: #555;
+            width: 60px;
+        }
+
+        .date-header {
+            padding: 12px 8px;
+            font-weight: 600;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .date-label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #222;
+        }
+
+        .weekday {
+            font-size: 11px;
+            color: #888;
+            font-weight: normal;
+            margin-top: 2px;
+        }
+
+        .price-cell {
+            padding: 15px 8px;
+            font-weight: 500;
+            color: #333;
+            cursor: help;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .price-cell:hover {
+            transform: scale(1.05);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .price-value {
+            display: block;
+            font-size: 12px;
+        }
+
+        .price-unit {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        /* 颜色渐变 */
+        .price-very-low {
+            background: #27ae60; /* 绿色 */
+            color: white;
+        }
+
+        .price-low {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .price-medium-low {
+            background: #f1c40f;
+            color: #333;
+        }
+
+        .price-medium {
+            background: #f39c12;
+            color: white;
+        }
+
+        .price-medium-high {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .price-high {
+            background: #c0392b;
+            color: white;
+        }
+
+        .price-very-high {
+            background: #8b0000;
+            color: white;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 6px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 20px;
+            }
+
+            th, td {
+                padding: 10px 6px;
+                font-size: 11px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend {
+                gap: 15px;
+            }
+
+            th, td {
+                padding: 8px 4px;
+                font-size: 10px;
+            }
+
+            .legend-box {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ 西班牙电价查看</h1>
+        <p class="subtitle">Spain PVPC - Precio Promedio Ponderado de la Electricidad</p>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #27ae60;"></div>
+                <span>&lt; €0.05 (极便宜)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #2ecc71;"></div>
+                <span>€0.05 - €0.10 (便宜)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #f1c40f;"></div>
+                <span>€0.10 - €0.15 (中等)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #f39c12;"></div>
+                <span>€0.15 - €0.20 (偏高)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #e74c3c;"></div>
+                <span>€0.20 - €0.25 (昂贵)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #c0392b;"></div>
+                <span>&gt; €0.25 (极昂贵)</span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="priceTable">
+                <thead>
+                    <tr id="dateHeader"></tr>
+                </thead>
+                <tbody id="priceBody"></tbody>
+            </table>
+        </div>
+
+        <div class="info-text">
+            💡 显示过去10天（包括今天）的每小时电价数据 | 单位: €/MWh | 数据模拟生成
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 根据电价生成对应的CSS类名
+         * @param {number} price - 电价 (€/MWh)
+         * @returns {string} CSS类名
+         */
+        function getPriceClass(price) {
+            if (price < 0.05) return 'price-very-low';
+            if (price < 0.10) return 'price-low';
+            if (price < 0.15) return 'price-medium-low';
+            if (price < 0.20) return 'price-medium';
+            if (price < 0.25) return 'price-medium-high';
+            if (price < 0.30) return 'price-high';
+            return 'price-very-high';
+        }
+
+        /**
+         * 根据电价生成渐变色背景
+         * @param {number} price - 电价
+         * @returns {string} RGB颜色值
+         */
+        function getPriceColor(price) {
+            let r, g, b;
+
+            if (price < 0.05) {
+                // 绿色 (39, 174, 96)
+                r = 39;
+                g = 174;
+                b = 96;
+            } else if (price < 0.10) {
+                // 绿色 -> 黄色
+                const ratio = (price - 0.05) / 0.05;
+                r = Math.round(39 + (241 - 39) * ratio);
+                g = Math.round(174 + (196 - 174) * ratio);
+                b = Math.round(96 + (30 - 96) * ratio);
+            } else if (price < 0.15) {
+                // 黄色 (241, 196, 30)
+                r = 241;
+                g = 196;
+                b = 30;
+            } else if (price < 0.20) {
+                // 黄色 -> 红色
+                const ratio = (price - 0.15) / 0.05;
+                r = Math.round(241 - (100 - 241) * ratio);
+                g = Math.round(196 - (76 - 196) * ratio);
+                b = Math.round(30 - (44 - 30) * ratio);
+            } else if (price < 0.25) {
+                // 红色 (231, 76, 60)
+                r = 231;
+                g = 76;
+                b = 60;
+            } else {
+                // 深红色 (192, 57, 43)
+                r = 192;
+                g = 57;
+                b = 43;
+            }
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        /**
+         * 计算对比文字颜色
+         * @param {number} price - 电价
+         * @returns {string} 颜色值 (white 或 #333)
+         */
+        function getTextColor(price) {
+            if (price < 0.15) {
+                return '#333';
+            }
+            return 'white';
+        }
+
+        /**
+         * 生成随机电价数据（模拟数据）
+         * @returns {Object} 包含过去10天每小时电价的对象
+         */
+        function generateMockPriceData() {
+            const data = {};
+            const today = new Date(2026, 3, 25); // 当前日期: 2026-04-25
+
+            for (let dayOffset = 0; dayOffset < 10; dayOffset++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - (9 - dayOffset));
+
+                const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+                data[dateStr] = [];
+
+                for (let hour = 0; hour < 24; hour++) {
+                    // 模拟电价：添加一些随机波动和时间模式
+                    const basePrice = 0.12;
+                    const timePattern = Math.sin((hour - 6) * Math.PI / 12) * 0.08;
+                    const randomNoise = (Math.random() - 0.5) * 0.06;
+                    const price = Math.max(0.02, basePrice + timePattern + randomNoise);
+
+                    data[dateStr].push(parseFloat(price.toFixed(4)));
+                }
+            }
+
+            return data;
+        }
+
+        /**
+         * 渲染价格表格
+         */
+        function renderPriceTable() {
+            const priceData = generateMockPriceData();
+            const today = new Date(2026, 3, 25);
+
+            // 获取过去10天的日期数组
+            const dates = [];
+            for (let dayOffset = 0; dayOffset < 10; dayOffset++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - (9 - dayOffset));
+                const dateStr = date.toISOString().split('T')[0];
+                dates.push({
+                    dateStr: dateStr,
+                    date: date,
+                    day: date.getDate(),
+                    month: date.getMonth() + 1,
+                    weekday: getWeekdayName(date.getDay())
+                });
+            }
+
+            // 渲染日期头行
+            const dateHeader = document.getElementById('dateHeader');
+            const headerCell = document.createElement('th');
+            headerCell.className = 'hour-header';
+            headerCell.textContent = '时间';
+            dateHeader.appendChild(headerCell);
+
+            dates.forEach(dateInfo => {
+                const th = document.createElement('th');
+                th.className = 'date-header';
+                th.innerHTML = `<div class="date-label">${dateInfo.month}/${dateInfo.day}</div><div class="weekday">${dateInfo.weekday}</div>`;
+                dateHeader.appendChild(th);
+            });
+
+            // 渲染每小时行
+            const priceBody = document.getElementById('priceBody');
+            for (let hour = 0; hour < 24; hour++) {
+                const tr = document.createElement('tr');
+
+                // 时间标签
+                const hourCell = document.createElement('td');
+                hourCell.className = 'hour-header';
+                hourCell.textContent = `${String(hour).padStart(2, '0')}:00`;
+                tr.appendChild(hourCell);
+
+                // 每天的电价
+                dates.forEach(dateInfo => {
+                    const td = document.createElement('td');
+                    const price = priceData[dateInfo.dateStr][hour];
+
+                    td.className = 'price-cell';
+                    const bgColor = getPriceColor(price);
+                    const textColor = getTextColor(price);
+
+                    td.style.backgroundColor = bgColor;
+                    td.style.color = textColor;
+                    td.title = `${dateInfo.month}/${dateInfo.day} ${String(hour).padStart(2, '0')}:00 - €${price.toFixed(4)}/MWh`;
+
+                    td.innerHTML = `
+                        <span class="price-value">€${price.toFixed(2)}</span>
+                        <span class="price-unit">/MWh</span>
+                    `;
+
+                    tr.appendChild(td);
+                });
+
+                priceBody.appendChild(tr);
+            }
+        }
+
+        /**
+         * 获取星期几的名称
+         * @param {number} dayIndex - 周几的索引 (0-6)
+         * @returns {string} 星期几的名称
+         */
+        function getWeekdayName(dayIndex) {
+            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            return weekdays[dayIndex];
+        }
+
+        // 页面加载时渲染表格
+        document.addEventListener('DOMContentLoaded', renderPriceTable);
+    </script>
+</body>
+</html>
