@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests  # 在这里列出你需要的所有模块
+          pip install -r requirements.txt
 
       - name: Run update script
         run: |
