@@ -240,20 +240,10 @@
         }
 
         /**
-         * 检查是否有足够的完整数据（过去10天）
+         * 检查是否有任何可用数据
          */
         function isDataComplete(data) {
-            const today = new Date();
-            for (let dayOffset = 0; dayOffset < 10; dayOffset++) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - (9 - dayOffset));
-                const dateStr = formatDate(date);
-                
-                if (!data[dateStr] || data[dateStr].length < 24) {
-                    return false;
-                }
-            }
-            return true;
+            return data && Object.keys(data).length > 0;
         }
 
         /**
@@ -298,14 +288,12 @@
          * 获取完整的过去10天数据
          */
         async function getPriceData() {
-            // 先尝试从本地加载
             let data = await loadLocalData();
             
             if (data && isDataComplete(data)) {
                 return data;
             }
 
-            // 本地数据不完整，从 API 获取
             data = data || {};
             const today = new Date();
             let updated = false;
@@ -321,16 +309,12 @@
                         data[dateStr] = prices;
                         updated = true;
                     }
-                    // 防止频繁请求
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
 
             if (updated) {
-                // 将获取的数据保存到本地存储
                 localStorage.setItem('pvpc_data', JSON.stringify(data));
-                
-                // 尝试发送到后端保存到 GitHub
                 try {
                     await fetch('api/save-pvpc', {
                         method: 'POST',
