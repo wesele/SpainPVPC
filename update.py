@@ -59,12 +59,28 @@ def is_data_complete(data):
                 return False
     return True
 
+def get_spain_offset_utc(date):
+    """返回西班牙时区相对于UTC的偏移小时数（考虑夏令时）"""
+    import calendar
+    year = date.year
+    march_last = max(week[-1] for week in calendar.monthcalendar(year, 3))
+    october_last = max(week[-1] for week in calendar.monthcalendar(year, 10))
+    dst_start = datetime(year, 3, march_last, 2, 0, 0)
+    dst_end = datetime(year, 10, october_last, 3, 0, 0)
+    naive_date = datetime(date.year, date.month, date.day)
+    if dst_start <= naive_date < dst_end:
+        return 2
+    return 1
+
 def fetch_from_ree_api(date):
     """从REE API获取指定日期的电价数据"""
     try:
         date_str = format_date(date)
-        start_date = f"{date_str}T00:00:00Z"
-        end_date = f"{date_str}T23:59:59Z"
+        offset = get_spain_offset_utc(date)
+        prev_date = date - timedelta(days=1)
+        prev_date_str = format_date(prev_date)
+        start_date = f"{prev_date_str}T{22-offset:02d}:00:00Z"
+        end_date = f"{date_str}T{21-offset:02d}:59:59Z"
         
         url = f'https://apidatos.ree.es/es/datos/mercados/precios-mercados-tiempo-real?start_date={start_date}&end_date={end_date}&time_trunc=hour'
         
