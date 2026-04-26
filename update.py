@@ -1,14 +1,25 @@
 import json
 import requests
+import urllib3
+import statistics
 from datetime import datetime, timedelta
 import os
 import sys
 from bs4 import BeautifulSoup
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # 设置Windows控制台编码为UTF-8
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+SESSION = requests.Session()
+SESSION.verify = False
+SESSION.headers.update({
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/html, */*'
+})
 
 def load_pvpc_data():
     """加载pvpc.json数据"""
@@ -57,7 +68,7 @@ def fetch_from_ree_api(date):
         
         url = f'https://apidatos.ree.es/es/datos/mercados/precios-mercados-tiempo-real?start_date={start_date}&end_date={end_date}&time_trunc=hour'
         
-        response = requests.get(url, timeout=10)
+        response = SESSION.get(url, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -89,7 +100,7 @@ def fetch_from_html(date):
             
         url = 'https://tarifaluzhora.es'
         
-        response = requests.get(url, timeout=10)
+        response = SESSION.get(url, timeout=10)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             
@@ -122,22 +133,15 @@ def fetch_from_api(date):
     try:
         date_str = format_date(date)
         
-        # 尝试多个API端点
-        api_endpoints = [
-            f'https://api.tarifaluzhora.es/v1/prices/{date_str}',
-            f'https://tarifaluzhora.es/api/prices/{date_str}',
-        ]
+        url = f'https://tarifaluzhora.es/api/prices/{date_str}'
         
-        for url in api_endpoints:
-            try:
-                response = requests.get(url, timeout=10)
-                if response.status_code == 200:
-                    prices = response.json()
-                    # 转换为小时价格数组 (€/MWh)
-                    return [round(item['price'] * 1000, 4) for item in prices]
-            except Exception as e:
-                print(f"  尝试 {url} 失败: {e}")
-                continue
+        try:
+            response = SESSION.get(url, timeout=10)
+            if response.status_code == 200:
+                prices = response.json()
+                return [round(item['price'] * 1000, 4) for item in prices]
+        except Exception as e:
+            print(f"  尝试 {url} 失败: {e}")
                 
     except Exception as e:
         print(f"获取 {date_str} 数据失败: {e}")
@@ -160,7 +164,6 @@ def should_update_date(date_str, data):
             return True
     
     # 检查是否与任何其他日期的数据的统计特征非常相似（可能是复制错误）
-    import statistics
     mean = statistics.mean(prices)
     stdev = statistics.stdev(prices) if len(prices) > 1 else 0
     
@@ -221,6 +224,11 @@ def update_pvpc_data():
                 print(f"✗ {date_str} 数据获取失败")
     
     if updated:
+        # 只保留最近10天的数据
+        cutoff_date = today - timedelta(days=9)
+        cutoff_str = format_date(cutoff_date)
+        data = {k: v for k, v in data.items() if k >= cutoff_str}
+        
         save_pvpc_data(data)
         print("✓ 数据已保存到 pvpc.json")
     else:
