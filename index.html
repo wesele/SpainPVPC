@@ -154,11 +154,55 @@
                 font-size: 18px;
             }
         }
+
+        .travel-nav-banner {
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .travel-nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+            border: 1px solid #fdba74;
+            color: #9a3412;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(194, 65, 12, 0.12);
+            transition: all 0.2s ease;
+        }
+
+        .travel-nav-link:hover {
+            background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+            color: #7c2d12;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(194, 65, 12, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .travel-nav-link {
+                font-size: 11px;
+                padding: 6px 12px;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>⚡ 西班牙电价查看</h1>
+
+        <div class="travel-nav-banner">
+            <a href="https://wesele.github.io/madrid-day-trips/" target="_blank" rel="noopener" class="travel-nav-link">
+                <span>🚇</span>
+                <span>马德里周边 M-30 环外当天往返漫游指南 (36大目的地 · 地图与图文路书) ↗</span>
+            </a>
+        </div>
 
         <div class="table-wrapper">
             <table id="priceTable">
