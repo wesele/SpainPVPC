@@ -159,6 +159,8 @@
             margin-bottom: 16px;
             display: flex;
             justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .travel-nav-link {
@@ -184,8 +186,31 @@
             box-shadow: 0 4px 10px rgba(194, 65, 12, 0.2);
         }
 
+        .reading-nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(217, 119, 6, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .reading-nav-link:hover {
+            background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+            color: #78350f;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.25);
+        }
+
         @media (max-width: 768px) {
-            .travel-nav-link {
+            .travel-nav-link, .reading-nav-link {
                 font-size: 11px;
                 padding: 6px 12px;
                 text-align: center;
@@ -198,6 +223,10 @@
         <h1>⚡ 西班牙电价查看</h1>
 
         <div class="travel-nav-banner">
+            <a href="./reading/" target="_blank" class="reading-nav-link">
+                <span>🇪🇸</span>
+                <span>西班牙语课文精读：我的香港新生活 (点读联动 · 双语对照) ↗</span>
+            </a>
             <a href="https://wesele.github.io/madrid-day-trips/" target="_blank" rel="noopener" class="travel-nav-link">
                 <span>🚇</span>
                 <span>马德里周边 M-30 环外当天往返漫游指南 (36大目的地 · 地图与图文路书) ↗</span>
