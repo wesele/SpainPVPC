@@ -209,8 +209,31 @@
             box-shadow: 0 4px 10px rgba(217, 119, 6, 0.25);
         }
 
+        .unico-nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 1px solid #93c5fd;
+            color: #1e40af;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(30, 64, 175, 0.12);
+            transition: all 0.2s ease;
+        }
+
+        .unico-nav-link:hover {
+            background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+            color: #172554;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(30, 64, 175, 0.2);
+        }
+
         @media (max-width: 768px) {
-            .travel-nav-link, .reading-nav-link {
+            .travel-nav-link, .reading-nav-link, .unico-nav-link {
                 font-size: 11px;
                 padding: 6px 12px;
                 text-align: center;
@@ -223,6 +246,10 @@
         <h1>⚡ 西班牙电价查看</h1>
 
         <div class="travel-nav-banner">
+            <a href="./unico/" target="_blank" class="unico-nav-link">
+                <span>🚆</span>
+                <span>西班牙 Abono Único 线路地图 (全境可用铁路线路 · 双语与筛选) ↗</span>
+            </a>
             <a href="./reading/" target="_blank" class="reading-nav-link">
                 <span>🇪🇸</span>
                 <span>西班牙语课文精读：我的香港新生活 (点读联动 · 双语对照) ↗</span>
